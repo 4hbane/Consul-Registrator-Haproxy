@@ -1,0 +1,54 @@
+version: "3"
+
+services:
+
+  consul:
+    image: consul:latest
+    command: "agent -server -bootstrap-expect=1 -ui -client=0.0.0.0"
+    ports:
+      - 8500:8500
+      - 8600:8600/udp
+    container_name: consul
+
+  registrator:
+    network_mode: host
+    image: gliderlabs/registrator:latest
+    command: "-internal consul://localhost:8500"
+    depends_on:
+      - consul
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
+    container_name: registrator
+
+  service1:
+    build: ./service1
+    image: ahbane/service1
+    depends_on:
+      - consul
+      - registrator
+
+  service2:
+    build: ./service2
+    image: ahbane/service2
+    depends_on:
+      - consul
+      - registrator
+  
+  service3:
+    build: ./service3
+    image: ahbane/service3
+    depends_on:
+      - consul
+      - registrator
+  
+  my-haproxy:
+    network_mode: host
+    build: ./haproxy-service
+    image: ahbane/haproxy
+    command: "-sysctl net.ipv4.ip_unprivileged_port_start=0"
+    ports:
+        - 8888:8888
+    depends_on:
+      - consul
+      - registrator
+    container_name: my-running-haproxy
