@@ -1,4 +1,5 @@
 FROM node:14
+MAINTAINER ahbane
 
 # Create app directory
 WORKDIR /usr/src/app
