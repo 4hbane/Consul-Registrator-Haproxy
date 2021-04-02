@@ -13,7 +13,7 @@ services:
   registrator:
     network_mode: host
     image: gliderlabs/registrator:latest
-    command: "-internal consul://localhost:8500"
+    command: "-internal consul://0.0.0.0:8500"
     depends_on:
       - consul
     volumes:

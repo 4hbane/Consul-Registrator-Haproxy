@@ -34,19 +34,11 @@ defaults
 	errorfile 504 /usr/local/etc/haproxy/errors/504.http
 
 frontend Local_Server
-	bind *:8888
-	{{range services}} {{if eq .Name "consul" }} {{else if eq .Name "my-haproxy" }} {{else if eq .Name "consul-8600" }} {{else if eq .Name "consul-8300" }}  {{else if eq .Name "consul-8500" }}  {{else if eq .Name "consul-8301" }} {{else if eq .Name "consul-8302"}}
-	{{else}}
-	acl PATH_{{.Name}} path_beg -i /{{.Name}} 
-	{{end}}{{end}}
-	{{range services}}{{if eq .Name "consul" }} {{else if eq .Name "my-haproxy" }} {{else if eq .Name "consul-8600" }} {{else if eq .Name "consul-8300" }}  {{else if eq .Name "consul-8500" }}  {{else if eq .Name "consul-8301" }} {{else if eq .Name "consul-8302"}} 
-	{{else}}
-	use_backend {{.Name}} if PATH_{{.Name}} 
-	{{end}}{{end}}
+	bind *:8888{{range services}} {{if and (and (and (ne .Name "consul") (ne .Name "consul-8500")) (and (ne .Name "consul-8600") (ne .Name "consul-8300"))) (and (ne .Name "consul-8301") (ne .Name "consul-8302")) }}
+	acl PATH_{{.Name}} path_beg -i /{{.Name}} {{end}}{{end}}
+	{{range services}} {{if and (and (and (ne .Name "consul") (ne .Name "consul-8500")) (and (ne .Name "consul-8600") (ne .Name "consul-8300"))) (and (ne .Name "consul-8301") (ne .Name "consul-8302")) }}	
+	use_backend {{.Name}} if PATH_{{.Name}}{{end}}{{end}}
 
-{{range services}}
-{{if eq .Name "consul" }} {{else if eq .Name "my-haproxy" }} {{else if eq .Name "consul-8600" }} {{else if eq .Name "consul-8300" }} {{else if eq .Name "consul-8500" }}  {{else if eq .Name "consul-8301" }} {{else if eq .Name "consul-8302"}}
-{{else}}
+{{range services}}{{if and (and (and (ne .Name "consul") (ne .Name "consul-8500")) (and (ne .Name "consul-8600") (ne .Name "consul-8300"))) (and (ne .Name "consul-8301") (ne .Name "consul-8302")) }}
 backend {{.Name}} {{range service .Name }}
-	server {{.Node}}-{{.Address}} {{.Address}}:{{.Port}}{{end}}{{end}}
-{{end}}
+	server {{.Node}}-{{.Address}} {{.Address}}:{{.Port}}{{end}}{{end}}{{end}}
